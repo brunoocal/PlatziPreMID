@@ -1,0 +1,24 @@
+{
+    "author": {
+      "name": "nish",
+      "id": "795098552664719370"
+    },
+    "service": "Platzi",
+    "description": {
+      "es": "Platzi es una de las mejores plataformas de estudio online, te ayuda a perfeccionar, mejorar y estar informado de las nuevas tendencias de tu carrera.",
+      "en": "Platzi is one of the best online study platforms, it helps you perfect, improve and be informed of new trends in your career.",
+      "pt_BR": "Platzi é uma das plataformas de estúdio online, te ayuda a perfeccionar, mejorar e estar de acordo com as novas tendências de tu carrera."
+    },
+    "url": "platzi.com",
+    "version": "2.7.4",
+    "logo": "https://nish.is-inside.me/cWB0TshP.png",
+    "thumbnail": "https://nish.is-inside.me/rzLeSYWR.png",
+    "color": "#000000",
+    "tags": [
+      "courses",
+      "learning",
+      "platzi"
+    ],
+    "category": "videos"
+  }
+  

@@ -4,6 +4,8 @@ const presence = new Presence({
   tiempoEstimado = Math.floor(Date.now() / 1000);
  
   let available_logos: any;
+  let categoriesEventListener: Boolean = false;
+  let activeCategory: string = "";
 
   fetch("https://api.jsonbin.io/b/6080f3c956c62a0c0e8a28a3")
   .then(res => res.json())
@@ -52,6 +54,84 @@ presence.on("UpdateData", async () => {
             presenceData.largeImageKey = pathNameSplitted[1].toString();
         }else{
             presenceData.largeImageKey = "lg-dark";
+        }
+    }else if(document.location.pathname.includes("/clases/") && document.location.pathname.split("/").filter(Boolean).length > 2){
+
+        const classTitle = document.querySelector(".Header-class-title h2");
+        const course = document.querySelector(".Header-course-info-content a h1");
+        const pathNameSplitted = document.location.pathname.split("/").filter(Boolean);
+        const video: HTMLVideoElement = document.querySelector(".vjs-tech");
+        const checkPause = document.querySelector(".VideoPlayer > div");
+        let timestamps;
+
+        presenceData.details = classTitle.textContent;
+        presenceData.state = `${course.textContent}`
+
+        let pathArray: string[] = pathNameSplitted[1].split("-");
+        pathArray.shift();
+        const pathName = pathArray.join("-");
+        
+        if(available_logos.includes(pathName)){
+            presenceData.largeImageKey = pathName;
+        }else{
+            presenceData.largeImageKey = "lg-dark";
+        }
+
+        if (video !== null && !isNaN(video.duration) && checkPause.className.includes("vjs-playing")) {
+            timestamps = presence.getTimestampsfromMedia(video);
+            console.log(timestamps)
+
+            presenceData.startTimestamp = timestamps[0];
+            presenceData.endTimestamp = timestamps[1];
+
+        }
+
+
+
+    }else if(document.location.pathname.includes("/cursos/")){
+        //NEW UI, SAME PRESENCE /CLASES/
+        const pathNameSplitted = document.location.pathname.split("/").filter(Boolean);
+        if(pathNameSplitted.length >= 2){
+            const course = document.querySelector(".Hero-content-title");
+            const teacher = document.querySelector(".Hero-teacher-name strong");
+            const pathNameSplitted = document.location.pathname.split("/").filter(Boolean)
+            presenceData.state = `de ${teacher.textContent}`
+            presenceData.details = course.textContent;
+            if(available_logos.includes(pathNameSplitted[1])){
+                presenceData.largeImageKey = pathNameSplitted[1].toString();
+            }else{
+                presenceData.largeImageKey = "lg-dark";
+            }
+        }else{
+            presenceData.state = "Buscando cursos...";
+            presenceData.startTimestamp = tiempoEstimado;
+            delete presenceData.details;
+        }
+    }else if(document.location.pathname.includes("/categorias/")){
+        const pathNameSplitted = document.location.pathname.split("/").filter(Boolean);
+        if(pathNameSplitted.length >= 2){
+             const categoryTitle = document.querySelector(".HeroCoursesItem-title span")
+            const learningPaths = document.querySelectorAll(".LearningPathItem");
+            presenceData.state = categoryTitle.textContent;
+
+            const setPresenceFromEvent = (learning_path: string) => {
+                activeCategory = learning_path
+            }
+
+            presenceData.details = activeCategory;
+
+            if(activeCategory !== ""){
+                presenceData.details = activeCategory;
+            }
+
+
+            if(!categoriesEventListener){
+                learningPaths.forEach(learning_path => {
+                    learning_path.addEventListener("mouseover", () => setPresenceFromEvent(learning_path.querySelector("h2").textContent))
+                });
+                categoriesEventListener = true;
+            }
+
         }
     }
   

@@ -14,8 +14,7 @@ presence.on("UpdateData", async () => {
     const presenceData = {
         details: "Pagina desconocida",
         largeImageKey: "lg-dark"
-    };
-
+ };
     if (document.location.pathname == "/home" || !document.location.pathname) {
         presenceData.state = "Inicio";
         delete presenceData.details;

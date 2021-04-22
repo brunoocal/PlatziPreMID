@@ -1,6 +1,7 @@
 const presence = new Presence({
     clientId: "834628404233240628"
 }), tiempoEstimado = Math.floor(Date.now() / 1000);
+
 let available_logos;
 let categoriesEventListener = false;
 let activeCategory = "";
@@ -8,30 +9,38 @@ fetch("https://api.jsonbin.io/b/6080f3c956c62a0c0e8a28a3")
     .then(res => res.json())
     .then(data => available_logos = data.available_logos)
     .then(() => console.log(available_logos));
+
 presence.on("UpdateData", async () => {
     const presenceData = {
         details: "Pagina desconocida",
         largeImageKey: "lg-dark"
-    };
-    console.log("act");
+ };
     if (document.location.pathname == "/home" || !document.location.pathname) {
         presenceData.state = "Inicio";
-        presenceData.startTimestamp = tiempoEstimado;
         delete presenceData.details;
     }
     else if (document.location.pathname.startsWith("/blog/")) {
-        presenceData.state = "Viendo el Blog";
-        presenceData.startTimestamp = tiempoEstimado;
-        delete presenceData.details;
+        presenceData.details = "Viendo el Blog";
+        presenceData.state = `Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current").textContent}`
     }
     else if (document.location.pathname.startsWith("/foro/")) {
-        presenceData.state = "Viendo el Foro";
-        presenceData.startTimestamp = tiempoEstimado;
+        presenceData.details = `Viendo el Foro`
+        presenceData.state = `Pagina ${document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current").textContent}`
+    }
+    else if (document.location.pathname.startsWith("/precios/")) {
+        presenceData.state = `Viendo los planes de compra`;
         delete presenceData.details;
+    }
+    else if (document.location.pathname.startsWith("/clases/notificaciones/")) {
+        presenceData.details = `Viendo sus notificaciones`
+        presenceData.state = `Pagina ${document.querySelector("#tinkerbell > div > div.Layout > div > div.Paginator > div.Paginator-pages > div.Paginator-number.is-current").textContent}`
+    }
+    else if (document.location.pathname.startsWith("/p/")) {
+        presenceData.details = `Viendo su perfil`
+        presenceData.state = `${document.querySelector("#profilePersonal > div > div.ProfileHeader > div > div.row.center-xs.center-md.center-sm > div.ProfileHeader-info.col-xs-12.col-sm-5.col-md-6 > div.ProfileHeader-username > h1").textContent} [${document.querySelector("#profilePersonal > div > div.ProfileHeader > div > div.row.center-xs.center-md.center-sm > div.col-xs-12.col-sm-4.col-md-3.col-md-offset-1 > div > div:nth-child(1) > div:nth-child(1) > div.ProfileScore-number.is-green").textContent} Puntos]`
     }
     else if (document.location.pathname == "/agenda/" || !document.location.pathname) {
         presenceData.state = "Viendo la Agenda";
-        presenceData.startTimestamp = tiempoEstimado;
         delete presenceData.details;
     }
     else if (document.location.pathname == "/live/" || !document.location.pathname) {

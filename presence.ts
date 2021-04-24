@@ -6,6 +6,7 @@ const presence = new Presence({
     let available_logos: any;
     let categoriesEventListener: Boolean = false;
     let activeCategory: string = "";
+    let busqueda: HTMLInputElement;
 
     fetch("https://api.jsonbin.io/b/6080f3c956c62a0c0e8a28a3")
     .then(res => res.json())
@@ -19,16 +20,55 @@ presence.on("UpdateData", async () => {
     };
     
     if (document.location.pathname == "/home" || !document.location.pathname) {
-        presenceData.state = "Inicio";
-        delete presenceData.details;
+        busqueda = document.querySelector("#home-student > div > div.u-wrapper > div > div.Catalog > div > div.Catalog-search > div.SearchBar > input");
+
+        if (busqueda == null){
+            presenceData.state = "Inicio";
+        } else {
+            presenceData.details = "Inicio";
+            presenceData.state = `Buscando: ${busqueda.value}`;
+        }
+    }
+    else if (document.location.pathname.startsWith("/blog/buscar")) {
+        busqueda = document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div.LabTutorials-row > div > div.col-xs-12.col-md-5 > form > input");
+
+        if (busqueda.value == "") {
+            presenceData.details = "Viendo el Blog";
+            presenceData.state = `Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current").textContent}`;
+        } else if (document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(3) > div > div > div > a.Pagination-number.is-current") == null) {
+            busqueda = document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div > div > div > form > input");
+
+            if (document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current") == null) {
+                presenceData.details = "Viendo el Blog";
+                presenceData.state = `Buscando: ${busqueda.value}`;
+            } else {
+                presenceData.details = "Viendo el Blog";
+                presenceData.state = `Buscando: ${busqueda.value} [Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current").textContent}]`;
+            }
+        } else {
+            presenceData.details = "Viendo el Blog";
+            presenceData.state = `Buscando: ${busqueda.value} [Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(3) > div > div > div > a.Pagination-number.is-current").textContent}]`;
+        }
     }
     else if (document.location.pathname.startsWith("/blog/")) {
         presenceData.details = "Viendo el Blog";
         presenceData.state = `Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current").textContent}`
     }
     else if (document.location.pathname.startsWith("/foro/")) {
-        presenceData.details = `Viendo el Foro`
-        presenceData.state = `Pagina ${document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current").textContent}`
+        busqueda = document.querySelector("#platzi-forum > div > div.Hero > div > div.Hero-content-left > div.Hero-content-left-btn > div > div > input");
+
+        if (document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current") == null){
+            presenceData.details = "Viendo el Foro"
+            presenceData.state = `Buscando: ${busqueda.value}`
+    } else {
+        if (busqueda.value == ""){
+            presenceData.details = "Viendo el Foro"
+            presenceData.state = `Pagina ${document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current").textContent}`
+        } else {
+            presenceData.details = "Viendo el Foro"
+            presenceData.state = `Buscando: ${busqueda.value} [Pagina ${document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current").textContent}]`
+        }
+    }
     }
     else if (document.location.pathname.startsWith("/precios/")) {
         presenceData.state = `Viendo los planes de compra`;

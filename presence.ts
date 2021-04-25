@@ -1,282 +1,255 @@
 const presence = new Presence({
-    clientId: "834628404233240628"
-  }), 
-  tiempoEstimado = Math.floor(Date.now() / 1000);
+    clientId: "834628404233240628",
+}),
+    tiempoEstimado = Math.floor(Date.now() / 1000);
 
-    
-    let available_logos: any;
-    let categoriesEventListener: Boolean = false;
-    let activeCategory: string = "";
-    let busqueda: HTMLInputElement;
+let available_logos: any;
+let categoriesEventListener: Boolean = false;
+let activeCategory: string = "";
 
-    fetch("https://api.jsonbin.io/b/6080f3c956c62a0c0e8a28a3")
-    .then(res => res.json())
-    .then(data => available_logos = data.available_logos)
-    .then(() => console.log(available_logos))
-  
+fetch("https://api.jsonbin.io/b/6080f3c956c62a0c0e8a28a3")
+    .then((res) => res.json())
+    .then((data) => (available_logos = data.available_logos))
+    .then(() => console.log(available_logos));
+
+const stripPlatziProfileFlags = (url: string) => {
+    return url.replace("https://static.platzi.com/media/flags/", "").replace(".png", "");
+}
+
+const setPresenceFromEvent = (learning_path: string) => {
+    activeCategory = learning_path;
+};
 
 presence.on("UpdateData", async () => {
     const presenceData: PresenceData = {
         details: "Pagina desconocida",
-        largeImageKey: "lg-dark"
+        largeImageKey: "lg-dark",
     };
 
-    console.log("act")
-    
-    if (document.location.pathname == "/home" || !document.location.pathname) {
-        busqueda = document.querySelector("#home-student > div > div.u-wrapper > div > div.Catalog > div > div.Catalog-search > div.SearchBar > input");
+    const pathname = document.location.pathname;
 
-        if (busqueda == null){
-            presenceData.state = "Inicio";
-        } else {
-            presenceData.details = "Inicio";
-            presenceData.state = `Buscando: ${busqueda.value}`;
-        }
-    }
-    else if (document.location.pathname.startsWith("/blog/buscar")) {
-        busqueda = document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div.LabTutorials-row > div > div.col-xs-12.col-md-5 > form > input");
+    console.log(pathname)
 
-        if (busqueda.value == "") {
+    if (Boolean(pathname)) {
+        if (pathname.includes("/home")) {
+
+            const SearchInputs: NodeListOf<HTMLInputElement> = document.querySelectorAll(".SearchBar input");
+
+            const InputValues = [...SearchInputs].map((input) => input.value).filter(Boolean);
+
+            presenceData.state = "Página de inicio";
+            delete presenceData.details;
+
+            if (InputValues.length > 0) {
+                presenceData.details = "Página de inicio";
+                presenceData.state = `Buscando: ${InputValues[0]}`;
+            }
+
+        } else if (pathname.includes("/blog/buscar")) {
+
+            const Input: HTMLInputElement = document.querySelector(".Search-input");
+            const BlogPage: HTMLElement = document.querySelector("a.Pagination-number.is-current");
+
             presenceData.details = "Viendo el Blog";
-            presenceData.state = `Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current").textContent}`;
-        } else if (document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(3) > div > div > div > a.Pagination-number.is-current") == null) {
-            busqueda = document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div > div > div > form > input");
 
-            if (document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current") == null) {
-                presenceData.details = "Viendo el Blog";
-                presenceData.state = `Buscando: ${busqueda.value}`;
+            if (Boolean(Input.value)) {
+                presenceData.state = `Buscando: ${Input.value}`;
+            } else if (Boolean(BlogPage)) {
+                presenceData.state = `Página ${BlogPage.textContent}`;
+            }
+
+        } else if (pathname.startsWith("/blog/")) {
+
+            presenceData.details = "Viendo el Blog";
+
+            const splittedPathname = pathname.split("/").filter(Boolean);
+
+            if (splittedPathname.length > 1) {
+                const ArticleTitle = document.querySelector(".Discussion-title h1");
+                const ArticleOwner = document.querySelector(".DiscussionInfo-user a");
+                const ArticleOwnerPoints = document.querySelector(".DiscussionInfo span");
+                const ArticleDate = document.querySelector(".DiscussionInfo-time");
+
+                presenceData.details = `Blog: ${ArticleTitle.textContent}`;
+                presenceData.state = `de ${ArticleOwner.textContent} [${ArticleOwnerPoints.textContent} pts] ${ArticleDate.textContent}`
+                presenceData.buttons = [{ label: "Ver el Artículo", url: `https://platzi.com${document.location.pathname}` }];
+            }
+
+        } else if (pathname.startsWith("/foro/")) {
+
+            const Input: HTMLInputElement = document.querySelector(".CustomSearchInput-search-input");
+            const ForumPage: HTMLElement = document.querySelector(".Paginator-number.is-current");
+
+            presenceData.details = "Viendo el Foro";
+
+            if (Boolean(Input.value)) {
+                presenceData.state = `Buscando: ${Input.value}`
+            } else if (Boolean(ForumPage)) {
+                presenceData.state = `Página: ${ForumPage.textContent}`
+            }
+
+        } else if (pathname.startsWith("/precios/")) {
+
+            presenceData.state = `Viendo los planes de compra`;
+            delete presenceData.details;
+
+        } else if (pathname.startsWith("/clases/notificaciones/")) {
+
+            presenceData.details = `Viendo sus notificaciones`;
+
+            const NotificationPage = document.querySelector(".Paginator-number.is-current");
+
+            if (Boolean(NotificationPage)) {
+                presenceData.state = `Página ${NotificationPage.textContent}`
+            }
+
+        } else if (pathname.startsWith("/p/")) {
+
+            const UserFullName: HTMLElement = document.querySelector(".ProfileHeader-name");
+            const UserPoints: HTMLElement = document.querySelector(".ProfileScore-number.is-green");
+            const UserFlag: HTMLElement = document.querySelector("div.ProfileHeader-username > figure > img");
+            const UserLink: HTMLAnchorElement = document.querySelector(".UserUrl-link");
+            const isUserProfile = [...document.querySelectorAll(".SingleTab")].filter(tab => tab.textContent === "Mi Portafolio");
+            let FinalString = "";
+
+            if (Boolean(UserFullName)) FinalString += ` ${UserFullName.textContent} `;
+            if (Boolean(UserFlag)) FinalString += ` ${stripPlatziProfileFlags(UserFlag.getAttribute("src"))} `;
+            if (Boolean(UserPoints)) FinalString += ` [${UserPoints.textContent} pts] `;
+            if (Boolean(UserLink)) {
+                presenceData.buttons = [{ label: "Link personal", url: `${UserLink.href}` }];
+            }
+
+            presenceData.details = "Viendo el perfil de";
+
+            if (isUserProfile.length > 0) {
+                presenceData.details = "Viendo su perfil"
+            }
+
+            presenceData.state = FinalString;
+        } else if (pathname == "/agenda/") {
+
+            presenceData.state = "Viendo la Agenda";
+            delete presenceData.details;
+
+        } else if (pathname == "/live/") {
+
+            presenceData.state = "Viendo Platzi Live";
+            presenceData.startTimestamp = tiempoEstimado;
+            delete presenceData.details;
+
+        } else if (
+            pathname.includes("/clases/") &&
+            pathname.split("/").filter(Boolean).length === 2
+        ) {
+            const course = document.querySelector(".CourseDetail-left-title");
+            const teacher = document.querySelector(".TeacherList-full-name");
+            const pathNameSplitted = pathname
+                .split("/")
+                .filter(Boolean);
+
+            presenceData.details = course.textContent;
+            presenceData.state = `de ${teacher.textContent}`;
+
+            if (available_logos.includes(pathNameSplitted[1])) {
+                presenceData.largeImageKey = pathNameSplitted[1].toString();
             } else {
-                presenceData.details = "Viendo el Blog";
-                presenceData.state = `Buscando: ${busqueda.value} [Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current").textContent}]`;
-            }
-        } else {
-            presenceData.details = "Viendo el Blog";
-            presenceData.state = `Buscando: ${busqueda.value} [Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(3) > div > div > div > a.Pagination-number.is-current").textContent}]`;
-        }
-    }
-    else if (document.location.pathname.startsWith("/blog/")) {
-        presenceData.details = "Viendo el Blog";
-        presenceData.state = `Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current").textContent}`
-    }
-    else if (document.location.pathname.startsWith("/foro/")) {
-        busqueda = document.querySelector("#platzi-forum > div > div.Hero > div > div.Hero-content-left > div.Hero-content-left-btn > div > div > input");
-
-        if (document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current") == null){
-            presenceData.details = "Viendo el Foro"
-            presenceData.state = `Buscando: ${busqueda.value}`
-    } else {
-        if (busqueda.value == ""){
-            presenceData.details = "Viendo el Foro"
-            presenceData.state = `Pagina ${document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current").textContent}`
-        } else {
-            presenceData.details = "Viendo el Foro"
-            presenceData.state = `Buscando: ${busqueda.value} [Pagina ${document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current").textContent}]`
-        }
-    }
-    }
-    else if (document.location.pathname.startsWith("/precios/")) {
-        presenceData.state = `Viendo los planes de compra`;
-        delete presenceData.details;
-    }
-    else if (document.location.pathname.startsWith("/clases/notificaciones/")) {
-        presenceData.details = `Viendo sus notificaciones`
-        presenceData.state = `Pagina ${document.querySelector("#tinkerbell > div > div.Layout > div > div.Paginator > div.Paginator-pages > div.Paginator-number.is-current").textContent}`
-    }
-    else if (document.location.pathname.startsWith("/p/")) {
-        presenceData.details = `Viendo su perfil`
-        presenceData.state = `${document.querySelector("#profilePersonal > div > div.ProfileHeader > div > div.row.center-xs.center-md.center-sm > div.ProfileHeader-info.col-xs-12.col-sm-5.col-md-6 > div.ProfileHeader-username > h1").textContent} [${document.querySelector("#profilePersonal > div > div.ProfileHeader > div > div.row.center-xs.center-md.center-sm > div.col-xs-12.col-sm-4.col-md-3.col-md-offset-1 > div > div:nth-child(1) > div:nth-child(1) > div.ProfileScore-number.is-green").textContent} Puntos]`
-    }
-    else if (document.location.pathname == "/agenda/" || !document.location.pathname) {
-        presenceData.state = "Viendo la Agenda";
-        delete presenceData.details;
-    }
-    else if (document.location.pathname == "/live/" || !document.location.pathname) {
-        presenceData.state = "Viendo Platzi Live";
-        presenceData.startTimestamp = tiempoEstimado;
-        delete presenceData.details;
-    }else if(document.location.pathname.includes("/clases/") && document.location.pathname.split("/").filter(Boolean).length === 2){
-        const course = document.querySelector(".CourseDetail-left-title");
-        const teacher = document.querySelector(".TeacherList-full-name");
-        const pathNameSplitted = document.location.pathname.split("/").filter(Boolean)
-        presenceData.state = `de ${teacher.textContent}`
-        presenceData.details = course.textContent;
-        if(available_logos.includes(pathNameSplitted[1])){
-            presenceData.largeImageKey = pathNameSplitted[1].toString();
-        }else{
-            presenceData.largeImageKey = "lg-dark";
-        }
-    }else if(document.location.pathname.includes("/clases/") && document.location.pathname.split("/").filter(Boolean).length > 2){
-
-        const classTitle = document.querySelector(".Header-class-title h2");
-        const course = document.querySelector(".Header-course-info-content a h1");
-        const pathNameSplitted = document.location.pathname.split("/").filter(Boolean);
-        const video: HTMLVideoElement = document.querySelector(".vjs-tech");
-        const checkPause = document.querySelector(".VideoPlayer > div");
-        let timestamps;
-
-        presenceData.details = classTitle.textContent;
-        presenceData.state = `${course.textContent}`
-
-        let pathArray: string[] = pathNameSplitted[1].split("-");
-        pathArray.shift();
-        const pathName = pathArray.join("-");
-        
-        if(available_logos.includes(pathName)){
-            presenceData.largeImageKey = pathName;
-        }else{
-            presenceData.largeImageKey = "lg-dark";
-        }
-
-        if (video !== null && !isNaN(video.duration) && checkPause.className.includes("vjs-playing")) {
-            timestamps = presence.getTimestampsfromMedia(video);
-            console.log(timestamps)
-
-            presenceData.startTimestamp = timestamps[0];
-            presenceData.endTimestamp = timestamps[1];
-
-        }
-
-
-
-    }else if(document.location.pathname.includes("/cursos/")){
-        //NEW UI, SAME PRESENCE /CLASES/
-        const pathNameSplitted = document.location.pathname.split("/").filter(Boolean);
-        if(pathNameSplitted.length >= 2){
-            const course = document.querySelector(".Hero-content-title");
-            const teacher = document.querySelector(".Hero-teacher-name strong");
-            const pathNameSplitted = document.location.pathname.split("/").filter(Boolean)
-            presenceData.state = `de ${teacher.textContent}`
-            presenceData.details = course.textContent;
-            if(available_logos.includes(pathNameSplitted[1])){
-                presenceData.largeImageKey = pathNameSplitted[1].toString();
-            }else{
                 presenceData.largeImageKey = "lg-dark";
             }
-        }else{
-            presenceData.state = "Buscando cursos...";
-            presenceData.startTimestamp = tiempoEstimado;
-            delete presenceData.details;
-        }
-    }else if(document.location.pathname.includes("/categorias/")){
-        const pathNameSplitted = document.location.pathname.split("/").filter(Boolean);
-        if(pathNameSplitted.length >= 2){
-             const categoryTitle = document.querySelector(".HeroCoursesItem-title span")
-            const learningPaths = document.querySelectorAll(".LearningPathItem");
-            presenceData.state = categoryTitle.textContent;
 
-            const setPresenceFromEvent = (learning_path: string) => {
-                activeCategory = learning_path
-            }
+        } else if (
+            pathname.includes("/clases/") &&
+            pathname.split("/").filter(Boolean).length > 2
+        ) {
+            const classTitle = document.querySelector(".Header-class-title h2");
+            const course = document.querySelector(".Header-course-info-content a h1");
+            const pathNameSplitted = pathname
+                .split("/")
+                .filter(Boolean);
+            const video: HTMLVideoElement = document.querySelector(".vjs-tech");
+            const checkPause = document.querySelector(".VideoPlayer > div");
+            let timestamps;
 
-            presenceData.details = activeCategory;
+            presenceData.details = classTitle.textContent;
+            presenceData.state = `${course.textContent}`;
 
-            if(activeCategory !== ""){
-                presenceData.details = activeCategory;
-            }
+            let pathArray: string[] = pathNameSplitted[1].split("-");
+            pathArray.shift();
+            const pathName = pathArray.join("-");
 
-
-            if(!categoriesEventListener){
-                learningPaths.forEach(learning_path => {
-                    learning_path.addEventListener("mouseover", () => setPresenceFromEvent(learning_path.querySelector("h2").textContent))
-                });
-                categoriesEventListener = true;
-            }
-
-        }
-    }
-    else if(document.location.pathname.includes("/clases/") && document.location.pathname.split("/").filter(Boolean).length === 2){
-        const course = document.querySelector(".CourseDetail-left-title");
-        const teacher = document.querySelector(".TeacherList-full-name");
-        const pathNameSplitted = document.location.pathname.split("/").filter(Boolean)
-        presenceData.state = `de ${teacher.textContent}`
-        presenceData.details = course.textContent;
-        if(available_logos.includes(pathNameSplitted[1])){
-            presenceData.largeImageKey = pathNameSplitted[1].toString();
-        }else{
-            presenceData.largeImageKey = "lg-dark";
-        }
-    }
-    else if(document.location.pathname.includes("/clases/") && document.location.pathname.split("/").filter(Boolean).length > 2){
-
-        const classTitle = document.querySelector(".Header-class-title h2");
-        const course = document.querySelector(".Header-course-info-content a h1");
-        const pathNameSplitted = document.location.pathname.split("/").filter(Boolean);
-        const video: HTMLVideoElement = document.querySelector(".vjs-tech");
-        const checkPause = document.querySelector(".VideoPlayer > div");
-        let timestamps;
-
-        presenceData.details = classTitle.textContent;
-        presenceData.state = `${course.textContent}`
-
-        let pathArray: string[] = pathNameSplitted[1].split("-");
-        pathArray.shift();
-        const pathName = pathArray.join("-");
-        
-        if(available_logos.includes(pathName)){
-            presenceData.largeImageKey = pathName;
-        }else{
-            presenceData.largeImageKey = "lg-dark";
-        }
-
-        if (video !== null && !isNaN(video.duration) && checkPause.className.includes("vjs-playing")) {
-            timestamps = presence.getTimestampsfromMedia(video);
-            console.log(timestamps)
-
-            presenceData.startTimestamp = timestamps[0];
-            presenceData.endTimestamp = timestamps[1];
-
-        }
-
-
-
-    }
-    else if(document.location.pathname.includes("/cursos/")){
-        //NEW UI, SAME PRESENCE /CLASES/
-        const pathNameSplitted = document.location.pathname.split("/").filter(Boolean);
-        if(pathNameSplitted.length >= 2){
-            const course = document.querySelector(".Hero-content-title");
-            const teacher = document.querySelector(".Hero-teacher-name strong");
-            const pathNameSplitted = document.location.pathname.split("/").filter(Boolean)
-            presenceData.state = `de ${teacher.textContent}`
-            presenceData.details = course.textContent;
-            if(available_logos.includes(pathNameSplitted[1])){
-                presenceData.largeImageKey = pathNameSplitted[1].toString();
-            }else{
+            if (available_logos.includes(pathName)) {
+                presenceData.largeImageKey = pathName;
+            } else {
                 presenceData.largeImageKey = "lg-dark";
             }
-        }else{
-            presenceData.state = "Buscando cursos...";
-            presenceData.startTimestamp = tiempoEstimado;
-            delete presenceData.details;
-        }
-    }else if(document.location.pathname.includes("/categorias/")){
-        const pathNameSplitted = document.location.pathname.split("/").filter(Boolean);
-        if(pathNameSplitted.length >= 2){
-             const categoryTitle = document.querySelector(".HeroCoursesItem-title span")
-            const learningPaths = document.querySelectorAll(".LearningPathItem");
-            presenceData.state = categoryTitle.textContent;
 
-            const setPresenceFromEvent = (learning_path: string) => {
-                activeCategory = learning_path
+            if (
+                video !== null &&
+                !isNaN(video.duration) &&
+                checkPause.className.includes("vjs-playing")
+            ) {
+                timestamps = presence.getTimestampsfromMedia(video);
+                console.log(timestamps);
+
+                presenceData.startTimestamp = timestamps[0];
+                presenceData.endTimestamp = timestamps[1];
             }
 
-            presenceData.details = activeCategory;
+        } else if (pathname.includes("/cursos/")) {
+            //NEW UI, SAME PRESENCE /CLASES/
+            const pathNameSplitted = pathname
+                .split("/")
+                .filter(Boolean);
 
-            if(activeCategory !== ""){
+            if (pathNameSplitted.length >= 2) {
+                const course = document.querySelector(".Hero-content-title");
+                const teacher = document.querySelector(".Hero-teacher-name strong");
+                const pathNameSplitted = pathname
+                    .split("/")
+                    .filter(Boolean);
+                presenceData.state = `de ${teacher.textContent}`;
+                presenceData.details = course.textContent;
+                if (available_logos.includes(pathNameSplitted[1])) {
+                    presenceData.largeImageKey = pathNameSplitted[1].toString();
+                } else {
+                    presenceData.largeImageKey = "lg-dark";
+                }
+
+            } else {
+                presenceData.state = "Buscando cursos...";
+                presenceData.startTimestamp = tiempoEstimado;
+                delete presenceData.details;
+            }
+
+        } else if (pathname.includes("/categorias/")) {
+
+            const pathNameSplitted = pathname
+                .split("/")
+                .filter(Boolean);
+
+            if (pathNameSplitted.length >= 2) {
+                const categoryTitle = document.querySelector(
+                    ".HeroCoursesItem-title span"
+                );
+                const learningPaths = document.querySelectorAll(".LearningPathItem");
+                presenceData.state = categoryTitle.textContent;
+
                 presenceData.details = activeCategory;
+
+                if (activeCategory !== "") {
+                    presenceData.details = activeCategory;
+                }
+
+                if (!categoriesEventListener) {
+                    learningPaths.forEach((learning_path) => {
+                        learning_path.addEventListener("mouseover", () =>
+                            setPresenceFromEvent(learning_path.querySelector("h2").textContent)
+                        );
+                    });
+                    categoriesEventListener = true;
+                }
             }
-
-
-            if(!categoriesEventListener){
-                learningPaths.forEach(learning_path => {
-                    learning_path.addEventListener("mouseover", () => setPresenceFromEvent(learning_path.querySelector("h2").textContent))
-                });
-                categoriesEventListener = true;
-            }
-
         }
     }
-  
+
     presence.setActivity(presenceData);
-  });
-  
+});

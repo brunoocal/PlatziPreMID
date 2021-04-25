@@ -1,7 +1,6 @@
 const presence = new Presence({
     clientId: "834628404233240628",
 }), tiempoEstimado = Math.floor(Date.now() / 1000);
-
 let available_logos;
 let categoriesEventListener = false;
 let activeCategory = "";
@@ -11,6 +10,7 @@ fetch("https://api.jsonbin.io/b/6080f3c956c62a0c0e8a28a3")
     .then((data) => (available_logos = data.available_logos))
     .then(() => console.log(available_logos));
 
+
 const stripPlatziProfileFlags = (url) => {
     return url.replace("https://static.platzi.com/media/flags/", "").replace(".png", "");
 };
@@ -19,11 +19,13 @@ const setPresenceFromEvent = (learning_path) => {
     activeCategory = learning_path;
 };
 
+
 presence.on("UpdateData", async () => {
     const presenceData = {
         details: "Pagina desconocida",
         largeImageKey: "lg-dark",
     };
+
 
     const pathname = document.location.pathname;
 
@@ -31,15 +33,15 @@ presence.on("UpdateData", async () => {
         if (pathname.includes("/home")) {
             const SearchInputs = document.querySelectorAll(".SearchBar input");
             const InputValues = [...SearchInputs].map((input) => input.value).filter(Boolean);
-            presenceData.state = "Página de inicio";
+            presenceData.state = "Página de inicio";Z
             delete presenceData.details;
             if (InputValues.length > 0) {
                 let rp = InputValues[0].replace(/[ ]/gi, "")
+                
+                presenceData.state = "Página de inicio";
+                delete presenceData.details;
 
-                if (rp == ""){
-                    presenceData.state = "Página de inicio";
-                    delete presenceData.details;
-                } else {
+                if (rp !== ""){
                     presenceData.details = "Página de inicio";
                     presenceData.state = `Buscando: ${InputValues[0]}`;
                 }
@@ -48,31 +50,22 @@ presence.on("UpdateData", async () => {
         else if (pathname.includes("/blog/buscar")) {
             const Input = document.querySelector(".Search-input");
             const BlogPage = document.querySelector("a.Pagination-number.is-current");
-
             presenceData.details = "Viendo el Blog";
 
             if (Boolean(Input.value)) {
                 let rp = Input.value.replace(/[ ]/gi, "");
-
-                if (rp == ""){
-                    if (Boolean(BlogPage)) {
-                        presenceData.state = `Página ${BlogPage.textContent}`;
-                    } else {
-                        presenceData.state = "Viendo el Blog";
-                        delete presenceData.details;
-                    }
-                } else {
-                    if (Boolean(BlogPage)) {
-                        presenceData.state = `Buscando: ${Input.value} [Pagina ${BlogPage.textContent}]`;
-                    } else {
-                        presenceData.state = `Buscando: ${Input.value}`;                        
+              
+                presenceData.state = `Buscando: ${Input.value}`;
+                
+                if(Boolean(BlogPage){
+                    presenceData.state = `Página ${BlogPage.textContent}`;
+                    if(rp !== ""){
+                      presenceData.state = `Buscando: ${Input.value} [Pagina ${BlogPage.textContent}]`;
                     }
                 }
-            } else if (Boolean(BlogPage)) {
-                presenceData.state = `Página ${BlogPage.textContent}`;
+
             }
-        }
-        else if (pathname.startsWith("/blog/")) {
+        }else if (pathname.startsWith("/blog/")) {
             presenceData.details = "Viendo el Blog";
             const splittedPathname = pathname.split("/").filter(Boolean);
             if (splittedPathname.length > 1) {
@@ -89,25 +82,28 @@ presence.on("UpdateData", async () => {
             const Input = document.querySelector(".CustomSearchInput-search-input");
             const ForumPage = document.querySelector(".Paginator-number.is-current");
 
+
             presenceData.details = "Viendo el Foro";
 
             if (Boolean(Input.value)) {
                 let rp = Input.value.replace(/[ ]/gi, "");
+              
+                presenceData.state = "Viendo el Foro";
+                delete presenceData.details;
 
-                if (rp == ""){
-                    if (Boolean(ForumPage)) {
-                        presenceData.state = `Página ${ForumPage.textContent}`;
-                    } else {
-                        presenceData.state = "Viendo el Foro";
-                        delete presenceData.details;
-                    }
-                } else {
-                    if (Boolean(ForumPage)) {
-                        presenceData.state = `Buscando: ${Input.value} [Pagina ${ForumPage.textContent}]`;
-                    } else {
-                        presenceData.state = `Buscando: ${Input.value}`;                        
-                    }
+                if(Boolean(ForumPage)){
+                  presenceData.state = `Página ${ForumPage.textContent}`;
                 }
+              
+                if(rp !== ""){
+                   presenceData.state = `Buscando: ${Input.value}`;
+                   
+                   if(Boolean(ForumPage)){
+                         presenceData.state = `Buscando: ${Input.value} [Pagina ${ForumPage.textContent}]`;
+                   }
+                  
+                }
+              
             } else if (Boolean(ForumPage)) {
                 presenceData.state = `Página ${ForumPage.textContent}`;
             }
@@ -116,6 +112,7 @@ presence.on("UpdateData", async () => {
             presenceData.state = `Viendo los planes de compra`;
             delete presenceData.details;
         }
+
         else if (pathname.startsWith("/empresas/")) {
             presenceData.state = `Viendo el plan para empresas`;
             delete presenceData.details;
@@ -180,6 +177,7 @@ presence.on("UpdateData", async () => {
             presenceData.state = `de ${teacher.textContent}`;
             presenceData.details = course.textContent;
             presenceData.buttons = [{ label: "Curso", url: `https://platzi.com${pathname}` }]
+
             if (available_logos.includes(pathNameSplitted[1])) {
                 presenceData.largeImageKey = pathNameSplitted[1].toString();
             }
@@ -187,6 +185,7 @@ presence.on("UpdateData", async () => {
                 presenceData.largeImageKey = "lg-dark";
             }
         }
+
         else if (pathname.includes("/clases/") && pathname.split("/").filter(Boolean).length > 2) {
             const course = document.querySelector(".Header-course-info-content a h1");
             const pathNameSplitted = pathname.split("/").filter(Boolean);
@@ -206,6 +205,7 @@ presence.on("UpdateData", async () => {
             presenceData.details = `${rp} [${rp2}/ ${rp3}]`;
             presenceData.state = `${course.textContent}`;
             presenceData.buttons = [{ label: "Curso", url: `https://platzi.com${document.querySelector("#material-view > div > div.MaterialView.MaterialView-type--video > div.MaterialView-video > div.MaterialView-content > div > div.Header.material-undefined > div.Header-course > div.Header-course-info > div > a").getAttribute("href")}` }, { label: "Clase", url: `https://platzi.com${pathname}`}];
+
             let pathArray = pathNameSplitted[1].split("-");
             pathArray.shift();
             const pathName = pathArray.join("-");
@@ -216,6 +216,7 @@ presence.on("UpdateData", async () => {
                 presenceData.largeImageKey = "lg-dark";
             }
             if (video !== null && !isNaN(video.duration) && checkPause.className.includes("vjs-playing")) {
+
                 timestamps = presence.getTimestampsfromMedia(video);
                 console.log(timestamps);
                 presenceData.startTimestamp = timestamps[0];
@@ -223,11 +224,13 @@ presence.on("UpdateData", async () => {
             }
         }
         else if (pathname.includes("/cursos/")) {
+
             const pathNameSplitted = pathname.split("/").filter(Boolean);
             if (pathNameSplitted.length >= 2) {
                 const course = document.querySelector(".Hero-content-title");
                 const teacher = document.querySelector(".Hero-teacher-name strong");
                 const pathNameSplitted = pathname.split("/").filter(Boolean);
+
                 presenceData.state = `de ${teacher.textContent}`;
                 presenceData.details = course.textContent;
                 if (available_logos.includes(pathNameSplitted[1])) {
@@ -244,20 +247,22 @@ presence.on("UpdateData", async () => {
             }
         }
         else if (pathname.includes("/categorias/")) {
+
             const pathNameSplitted = pathname.split("/").filter(Boolean);
+
             if (pathNameSplitted.length >= 2) {
                 const categoryTitle = document.querySelector(".HeroCoursesItem-title span");
                 const learningPaths = document.querySelectorAll(".LearningPathItem");
                 presenceData.state = categoryTitle.textContent;
-                const setPresenceFromEvent = (learning_path) => {
-                    activeCategory = learning_path;
-                };
+
                 presenceData.details = activeCategory;
                 if (activeCategory !== "") {
                     presenceData.details = activeCategory;
                 }
                 if (!categoriesEventListener) {
-                    learningPaths.forEach(learning_path => {
+
+                    learningPaths.forEach((learning_path) => {
+
                         learning_path.addEventListener("mouseover", () => setPresenceFromEvent(learning_path.querySelector("h2").textContent));
                     });
                     categoriesEventListener = true;

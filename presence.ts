@@ -1,7 +1,9 @@
 
 const presence = new Presence({
     clientId: "834628404233240628",
+
 }), tiempoEstimado = Math.floor(Date.now() / 1000);
+
 
 let available_logos: any;
 let categoriesEventListener: Boolean = false;
@@ -25,6 +27,7 @@ presence.on("UpdateData", async () => {
         details: "Pagina desconocida",
         largeImageKey: "lg-dark",
     };
+
 
     const pathname = document.location.pathname;
 
@@ -200,10 +203,12 @@ presence.on("UpdateData", async () => {
             presenceData.details = course.textContent;
             presenceData.buttons = [{ label: "Curso", url: `https://platzi.com${document.querySelector("#material-view > div > div.MaterialView.MaterialView-type--video > div.MaterialView-video > div.MaterialView-content > div > div.Header.material-undefined > div.Header-course > div.Header-course-info > div > a").getAttribute("href")}` }, { label: "Clase", url: `https://platzi.com${pathname}`}];
             if(available_logos.includes(pathNameSplitted[1])){
+
                 presenceData.largeImageKey = pathNameSplitted[1].toString();
-            }else{
+            } else {
                 presenceData.largeImageKey = "lg-dark";
             }
+
         }
         else if(pathname.includes("/clases/") && pathname.split("/").filter(Boolean).length > 2){
 
@@ -260,6 +265,7 @@ presence.on("UpdateData", async () => {
                     presenceData.largeImageKey = "lg-dark";
                 }
             }else{
+
                 presenceData.state = "Buscando cursos...";
                 presenceData.startTimestamp = tiempoEstimado;
                 delete presenceData.details;
@@ -276,6 +282,7 @@ presence.on("UpdateData", async () => {
                     activeCategory = learning_path
                 }
 
+
                 presenceData.details = activeCategory;
 
                 if(activeCategory !== ""){
@@ -286,12 +293,13 @@ presence.on("UpdateData", async () => {
                 if(!categoriesEventListener){
                     learningPaths.forEach(learning_path => {
                         learning_path.addEventListener("mouseover", () => setPresenceFromEvent(learning_path.querySelector("h2").textContent))
+
                     });
                     categoriesEventListener = true;
                 }
             }
         }
     }
+
     presence.setActivity(presenceData);
-  });
-  
+});

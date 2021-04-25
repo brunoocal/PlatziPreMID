@@ -229,8 +229,8 @@ presence.on("UpdateData", async () => {
 
             presenceData.details = `${rp} [${rp2}/ ${rp3}]`;
             presenceData.state = `${course.textContent}`
-            presenceData.buttons = [{ label: "Curso", url: `https://platzi.com${pathname}` }]
-
+            presenceData.buttons = [{ label: "Curso", url: `https://platzi.com${document.querySelector("#material-view > div > div.MaterialView.MaterialView-type--video > div.MaterialView-video > div.MaterialView-content > div > div.Header.material-undefined > div.Header-course > div.Header-course-info > div > a").getAttribute("href")}` }, { label: "Clase", url: `https://platzi.com${pathname}`}];
+            
             let pathArray: string[] = pathNameSplitted[1].split("-");
             pathArray.shift();
             const pathName = pathArray.join("-");

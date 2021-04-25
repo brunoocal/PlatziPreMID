@@ -16,16 +16,49 @@ presence.on("UpdateData", async () => {
         largeImageKey: "lg-dark"
  };
     if (document.location.pathname == "/home" || !document.location.pathname) {
+        if(document.querySelector("#home-student > div > div.u-wrapper > div > div.Catalog > div > div.Catalog-search > div.SearchBar > input").value == ""){
         presenceData.state = "Inicio";
         delete presenceData.details;
+        } else {
+            presenceData.details = "Inicio";
+            presenceData.state = `Buscando: ${document.querySelector("#home-student > div > div.u-wrapper > div > div.Catalog > div > div.Catalog-search > div.SearchBar > input").value}`
+
+        }
+    }
+    else if (document.location.pathname.startsWith("/blog/buscar")) {
+        if (document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div.LabTutorials-row > div > div.col-xs-12.col-md-5 > form > input").value == "") {
+            presenceData.details = "Viendo el Blog";
+            presenceData.state = `Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current").textContent}`;
+        } else if (document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(3) > div > div > div > a.Pagination-number.is-current") == null) {
+            if (document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current") == null) {
+                presenceData.details = "Viendo el Blog";
+                presenceData.state = `Buscando: ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div > div > div > form > input").value}`;
+            } else {
+                presenceData.details = "Viendo el Blog";
+                presenceData.state = `Buscando: ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div.LabTutorials-row > div > div.col-xs-12.col-md-5 > form > input").value} [Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current").textContent}]`;
+            }
+        } else {
+            presenceData.details = "Viendo el Blog";
+            presenceData.state = `Buscando: ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div.LabTutorials-row > div > div.col-xs-12.col-md-5 > form > input").value} [Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(3) > div > div > div > a.Pagination-number.is-current").textContent}]`;
+        }
     }
     else if (document.location.pathname.startsWith("/blog/")) {
         presenceData.details = "Viendo el Blog";
         presenceData.state = `Pagina ${document.querySelector("#lab-tutorials > div.LabTutorials-contributions > div > div > div:nth-child(4) > div > div > div > a.Pagination-number.is-current").textContent}`
     }
     else if (document.location.pathname.startsWith("/foro/")) {
-        presenceData.details = `Viendo el Foro`
-        presenceData.state = `Pagina ${document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current").textContent}`
+        if (document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current") == null){
+                presenceData.details = "Viendo el Foro"
+                presenceData.state = `Buscando: ${document.querySelector("#platzi-forum > div > div.Hero > div > div.Hero-content-left > div.Hero-content-left-btn > div > div > input").value}`
+        } else {
+            if (document.querySelector("#platzi-forum > div > div.Hero > div > div.Hero-content-left > div.Hero-content-left-btn > div > div > input").value == ""){
+                presenceData.details = "Viendo el Foro"
+                presenceData.state = `Pagina ${document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current").textContent}`
+            } else {
+                presenceData.details = "Viendo el Foro"
+                presenceData.state = `Buscando: ${document.querySelector("#platzi-forum > div > div.Hero > div > div.Hero-content-left > div.Hero-content-left-btn > div > div > input").value} [Pagina ${document.querySelector("#platzi-forum > div > div.u-row-wrapper > div > div > div.ForumContent-paginator > div > div.Paginator-pages > a.Paginator-number.is-current").textContent}]`
+            }
+        }
     }
     else if (document.location.pathname.startsWith("/precios/")) {
         presenceData.state = `Viendo los planes de compra`;

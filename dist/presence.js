@@ -14,8 +14,7 @@ presence.on("UpdateData", async () => {
     const presenceData = {
         details: "Pagina desconocida",
         largeImageKey: "lg-dark"
-    };
-
+ };
     if (document.location.pathname == "/home" || !document.location.pathname) {
         if(document.querySelector("#home-student > div > div.u-wrapper > div > div.Catalog > div > div.Catalog-search > div.SearchBar > input").value == ""){
         presenceData.state = "Inicio";

@@ -10,12 +10,14 @@ let titleToID: object;
 let categoriesEventListener: boolean = false;
 let activeCategory: string = "";
 
-fetch("https://cdn.jsdelivr.net/gh/brunoocal/PlatziPreMID/fake-api-data.json")
+fetch("https://cdn.jsdelivr.net/gh/brunoocal/PlatziPreMID/apiidata.json")
   .then((res) => res.json())
   .then((data) => {
     available_logos = data.available_logos;
     schools = data.schools;
     titleToID = data.titleToID;
+
+    console.log(available_logos, schools, titleToID, data);
 
     //I tried unstructuring the data object but it throws an error, whatever xD
   });
@@ -37,6 +39,7 @@ const getIDByTitle = (title: string) => {
 
   if (Boolean(keyOfTitle)) {
     const iKey = keys.indexOf(keyOfTitle);
+    console.log(values[iKey]);
     return values[iKey];
   }
 
@@ -405,7 +408,11 @@ presence.on("UpdateData", async () => {
         "-"
       )}]`;
 
-      if (available_logos.includes(getIDByTitle(CourseName.textContent))) {
+      if (
+        [...available_logos, ...schools].includes(
+          getIDByTitle(CourseName.textContent)
+        )
+      ) {
         presenceData.largeImageKey = getIDByTitle(CourseName.textContent);
       }
     } else {
@@ -416,7 +423,11 @@ presence.on("UpdateData", async () => {
         presenceData.details = CourseName.textContent;
         presenceData.state = `Revisando sus respuestas...`;
 
-        if (available_logos.includes(getIDByTitle(CourseName.textContent))) {
+        if (
+          [...available_logos, ...schools].includes(
+            getIDByTitle(CourseName.textContent)
+          )
+        ) {
           presenceData.largeImageKey = getIDByTitle(CourseName.textContent);
         }
       } else if (pathname.includes("resultados")) {
@@ -435,7 +446,11 @@ presence.on("UpdateData", async () => {
           Score >= 9 ? "aprovado" : "no aprovado"
         }. [${Score} en ${Questions} preguntas]`;
 
-        if (available_logos.includes(getIDByTitle(CourseName.textContent))) {
+        if (
+          [...available_logos, ...schools].includes(
+            getIDByTitle(CourseName.textContent)
+          )
+        ) {
           presenceData.largeImageKey = getIDByTitle(CourseName.textContent);
         }
       } else {
@@ -449,11 +464,48 @@ presence.on("UpdateData", async () => {
         presenceData.details = CourseName.textContent;
         presenceData.state = `Empezando el exámen [${ExamQuestions.textContent}]`;
 
-        if (available_logos.includes(getIDByTitle(CourseName.textContent))) {
+        if (
+          [...available_logos, ...schools].includes(
+            getIDByTitle(CourseName.textContent)
+          )
+        ) {
           presenceData.largeImageKey = getIDByTitle(CourseName.textContent);
         }
       }
     }
+  } else if (pathname.startsWith("/direct-messages/u/soporte-platzi")) {
+    presenceData.state = "Hablando con el Soporte Platzi";
+    delete presenceData.details;
+  } else if (pathname.startsWith("/mensajes-directos/")) {
+    presenceData.state = "Viendo sus Mensajes";
+    delete presenceData.details;
+  } else if (pathname.startsWith("/empleos/")) {
+    presenceData.state = "Viendo la lista de Empleos";
+    delete presenceData.details;
+  } else if (pathname.startsWith("/mi-suscripcion/beneficiario/")) {
+    presenceData.state = "Viendo su Beneficiario";
+    delete presenceData.details;
+  } else if (pathname.startsWith("/mi-suscripcion/facturas/")) {
+    const FullName: HTMLDivElement = document.querySelector(
+      ".ProfileMenu-name"
+    );
+    const Pts: HTMLDivElement = document.querySelector(".ProfileMenu-rank");
+    presenceData.details = `Viendo sus ${
+      document.querySelector(".InvoicesList-title").textContent
+    }`;
+    presenceData.state = `${FullName.textContent} [${Pts.textContent}]`;
+  } else if (pathname.startsWith("/mi-suscripcion/referidos/")) {
+    const Input: HTMLInputElement = document.querySelector("#copyUrl");
+
+    presenceData.state = "Viendo sus referidos";
+    presenceData.buttons = [{ label: "Referido", url: `${Input.value}` }];
+    delete presenceData.details;
+  } else if (pathname.startsWith("/mi--suscripcion/")) {
+    const SubscriptionName: HTMLDivElement = document.querySelector(
+      ".CurrentPlan-name"
+    );
+    presenceData.details = "Viendo su suscripcion";
+    presenceData.state = `${SubscriptionName.textContent}`;
   }
 
   presence.setActivity(presenceData);

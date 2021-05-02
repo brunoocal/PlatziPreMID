@@ -4,7 +4,6 @@ const presence = new Presence({
   estimatedTime = Math.floor(Date.now() / 1000);
 
 let available_logos: Array<string>, schools: Array<string>;
-
 let titleToID: object;
 
 let categoriesEventListener: boolean = false;
@@ -16,8 +15,6 @@ fetch("https://cdn.jsdelivr.net/gh/brunoocal/PlatziPreMID/apiidata.json")
     available_logos = data.available_logos;
     schools = data.schools;
     titleToID = data.titleToID;
-
-    console.log(available_logos, schools, titleToID, data);
 
     //I tried unstructuring the data object but it throws an error, whatever xD
   });
@@ -39,7 +36,6 @@ const getIDByTitle = (title: string) => {
 
   if (Boolean(keyOfTitle)) {
     const iKey = keys.indexOf(keyOfTitle);
-    console.log(values[iKey]);
     return values[iKey];
   }
 
@@ -490,9 +486,10 @@ presence.on("UpdateData", async () => {
       ".ProfileMenu-name"
     );
     const Pts: HTMLDivElement = document.querySelector(".ProfileMenu-rank");
-    presenceData.details = `Viendo sus ${
-      document.querySelector(".InvoicesList-title").textContent
-    }`;
+    const NOfPayments: HTMLHeadingElement = document.querySelector(
+      ".InvoicesList-title"
+    );
+    presenceData.details = `Viendo sus ${NOfPayments.textContent}`;
     presenceData.state = `${FullName.textContent} [${Pts.textContent}]`;
   } else if (pathname.startsWith("/mi-suscripcion/referidos/")) {
     const Input: HTMLInputElement = document.querySelector("#copyUrl");
